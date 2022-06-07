@@ -1,0 +1,2 @@
+- jdk version: 1.8.0_331
+- 源码环境: IDEA -> File -> Project Structure -> SDKS -> 自定义JDK -> Sourcepath -> add jdk-learning/jdk-resource/src
