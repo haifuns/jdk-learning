@@ -91,7 +91,7 @@ public class LinkedList<E>
      * Invariant: (first == null && last == null) ||
      *            (first.prev == null && first.item != null)
      */
-    transient Node<E> first;
+    transient Node<E> first; // Node内部类、双向链表
 
     /**
      * Pointer to last node.
@@ -144,7 +144,7 @@ public class LinkedList<E>
         if (l == null)
             first = newNode;
         else
-            l.next = newNode;
+            l.next = newNode; // 链到队尾
         size++;
         modCount++;
     }
@@ -335,7 +335,7 @@ public class LinkedList<E>
      * @return {@code true} (as specified by {@link Collection#add})
      */
     public boolean add(E e) {
-        linkLast(e);
+        linkLast(e); // 在双向链表尾部插入一个元素
         return true;
     }
 
@@ -504,12 +504,12 @@ public class LinkedList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     public void add(int index, E element) {
-        checkPositionIndex(index);
+        checkPositionIndex(index); // 边界检查
 
         if (index == size)
-            linkLast(element);
+            linkLast(element); // 如果是队尾直接链过去
         else
-            linkBefore(element, node(index));
+            linkBefore(element, node(index)); // 查到index位置node, 把element链到前面
     }
 
     /**
@@ -563,10 +563,10 @@ public class LinkedList<E>
     /**
      * Returns the (non-null) Node at the specified element index.
      */
-    Node<E> node(int index) {
+    Node<E> node(int index) { // 遍历找index位置元素
         // assert isElementIndex(index);
 
-        if (index < (size >> 1)) {
+        if (index < (size >> 1)) { // 二分决定从头遍历还是从尾遍历
             Node<E> x = first;
             for (int i = 0; i < index; i++)
                 x = x.next;
