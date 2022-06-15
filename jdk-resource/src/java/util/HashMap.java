@@ -335,9 +335,9 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      * to incorporate impact of the highest bits that would otherwise
      * never be used in index calculations because of table bounds.
      */
-    static final int hash(Object key) {
+    static final int hash(Object key) { // hash算法jdk1.8优化
         int h;
-        return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
+        return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16); // 低16结果是原始hash高16位和低16位异或结果, 让低16位同时保留原始高低16特征, 让高低16位都参与到后续运算, 减少高16位参与不到计算导致的冲突
     }
 
     /**
@@ -394,7 +394,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      * (We also tolerate length zero in some operations to allow
      * bootstrapping mechanics that are currently not needed.)
      */
-    transient Node<K,V>[] table;
+    transient Node<K,V>[] table; // 数组+链表
 
     /**
      * Holds cached entrySet(). Note that AbstractMap fields are used
@@ -627,26 +627,26 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                    boolean evict) {
         Node<K,V>[] tab; Node<K,V> p; int n, i;
         if ((tab = table) == null || (n = tab.length) == 0)
-            n = (tab = resize()).length;
-        if ((p = tab[i = (n - 1) & hash]) == null)
+            n = (tab = resize()).length; // 空扩容
+        if ((p = tab[i = (n - 1) & hash]) == null) // 如果寻址位置为空
             tab[i] = newNode(hash, key, value, null);
-        else {
+        else { // 寻址位置不为空, 发生碰撞
             Node<K,V> e; K k;
             if (p.hash == hash &&
-                ((k = p.key) == key || (key != null && key.equals(k))))
-                e = p;
-            else if (p instanceof TreeNode)
+                ((k = p.key) == key || (key != null && key.equals(k)))) // hash相等, key相等
+                e = p; // 相同key, 取出value
+            else if (p instanceof TreeNode) // 如果寻址位置是红黑树
                 e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
-            else {
+            else { // 如果寻址位置是链表
                 for (int binCount = 0; ; ++binCount) {
-                    if ((e = p.next) == null) {
-                        p.next = newNode(hash, key, value, null);
-                        if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
-                            treeifyBin(tab, hash);
+                    if ((e = p.next) == null) { // 链表尾
+                        p.next = newNode(hash, key, value, null); // 加到链表尾
+                        if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st 链表长度大于等于8
+                            treeifyBin(tab, hash); // 链表转化红黑树
                         break;
                     }
                     if (e.hash == hash &&
-                        ((k = e.key) == key || (key != null && key.equals(k))))
+                        ((k = e.key) == key || (key != null && key.equals(k)))) // hash相等, key相等
                         break;
                     p = e;
                 }
@@ -654,7 +654,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
             if (e != null) { // existing mapping for key
                 V oldValue = e.value;
                 if (!onlyIfAbsent || oldValue == null)
-                    e.value = value;
+                    e.value = value; // 相同key, value覆盖
                 afterNodeAccess(e);
                 return oldValue;
             }
@@ -710,7 +710,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                 if ((e = oldTab[j]) != null) {
                     oldTab[j] = null;
                     if (e.next == null)
-                        newTab[e.hash & (newCap - 1)] = e;
+                        newTab[e.hash & (newCap - 1)] = e; // 寻址优化, (n - 1) & hash
                     else if (e instanceof TreeNode)
                         ((TreeNode<K,V>)e).split(this, newTab, j, oldCap);
                     else { // preserve order
