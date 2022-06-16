@@ -2162,7 +2162,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
         final void split(HashMap<K,V> map, Node<K,V>[] tab, int index, int bit) {
             TreeNode<K,V> b = this;
             // Relink into lo and hi lists, preserving order
-            TreeNode<K,V> loHead = null, loTail = null;
+            TreeNode<K,V> loHead = null, loTail = null; // 红黑树重新寻址, 拆成两个双向链表
             TreeNode<K,V> hiHead = null, hiTail = null;
             int lc = 0, hc = 0;
             for (TreeNode<K,V> e = b, next; e != null; e = next) {
@@ -2187,12 +2187,12 @@ public class HashMap<K,V> extends AbstractMap<K,V>
             }
 
             if (loHead != null) {
-                if (lc <= UNTREEIFY_THRESHOLD)
+                if (lc <= UNTREEIFY_THRESHOLD) // 小于等于6红黑树退化成单链表
                     tab[index] = loHead.untreeify(map);
                 else {
                     tab[index] = loHead;
                     if (hiHead != null) // (else is already treeified)
-                        loHead.treeify(tab);
+                        loHead.treeify(tab); // 构建红黑树
                 }
             }
             if (hiHead != null) {
