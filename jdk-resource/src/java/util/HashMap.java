@@ -568,14 +568,14 @@ public class HashMap<K,V> extends AbstractMap<K,V>
     final Node<K,V> getNode(int hash, Object key) {
         Node<K,V>[] tab; Node<K,V> first, e; int n; K k;
         if ((tab = table) != null && (n = tab.length) > 0 &&
-            (first = tab[(n - 1) & hash]) != null) {
+            (first = tab[(n - 1) & hash]) != null) { // hash寻址
             if (first.hash == hash && // always check first node
-                ((k = first.key) == key || (key != null && key.equals(k))))
+                ((k = first.key) == key || (key != null && key.equals(k)))) // 如果hash相等, key相等
                 return first;
             if ((e = first.next) != null) {
-                if (first instanceof TreeNode)
-                    return ((TreeNode<K,V>)first).getTreeNode(hash, key);
-                do {
+                if (first instanceof TreeNode) // 红黑树
+                    return ((TreeNode<K,V>)first).getTreeNode(hash, key); // 进入红黑树进行二叉查找
+                do { // 单向链表遍历查找
                     if (e.hash == hash &&
                         ((k = e.key) == key || (key != null && key.equals(k))))
                         return e;
@@ -636,7 +636,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                 ((k = p.key) == key || (key != null && key.equals(k)))) // hash相等, key相等
                 e = p; // 相同key, 取出value
             else if (p instanceof TreeNode) // 如果寻址位置是红黑树
-                e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
+                e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value); // 插入到红黑树
             else { // 如果寻址位置是链表
                 for (int binCount = 0; ; ++binCount) {
                     if ((e = p.next) == null) { // 链表尾
@@ -661,7 +661,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
         }
         ++modCount;
         if (++size > threshold)
-            resize();
+            resize(); // 如果数组长度大于capacity*0.75, 数组扩容
         afterNodeInsertion(evict);
         return null;
     }
@@ -685,14 +685,14 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                 threshold = Integer.MAX_VALUE;
                 return oldTab;
             }
-            else if ((newCap = oldCap << 1) < MAXIMUM_CAPACITY &&
+            else if ((newCap = oldCap << 1) < MAXIMUM_CAPACITY && // 新容量 = 旧容量 * 2, 新数组扩容两倍
                      oldCap >= DEFAULT_INITIAL_CAPACITY)
                 newThr = oldThr << 1; // double threshold
         }
         else if (oldThr > 0) // initial capacity was placed in threshold
             newCap = oldThr;
         else {               // zero initial threshold signifies using defaults
-            newCap = DEFAULT_INITIAL_CAPACITY;
+            newCap = DEFAULT_INITIAL_CAPACITY; // 数组旧容量为空, 初始化容量16
             newThr = (int)(DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);
         }
         if (newThr == 0) {
@@ -705,21 +705,21 @@ public class HashMap<K,V> extends AbstractMap<K,V>
         Node<K,V>[] newTab = (Node<K,V>[])new Node[newCap];
         table = newTab;
         if (oldTab != null) {
-            for (int j = 0; j < oldCap; ++j) {
+            for (int j = 0; j < oldCap; ++j) { // 遍历旧数组放到新数组
                 Node<K,V> e;
                 if ((e = oldTab[j]) != null) {
                     oldTab[j] = null;
-                    if (e.next == null)
-                        newTab[e.hash & (newCap - 1)] = e; // 寻址优化, (n - 1) & hash
-                    else if (e instanceof TreeNode)
+                    if (e.next == null) // 只有一个元素
+                        newTab[e.hash & (newCap - 1)] = e; // 寻址, (n - 1) & hash
+                    else if (e instanceof TreeNode) // 红黑树
                         ((TreeNode<K,V>)e).split(this, newTab, j, oldCap);
-                    else { // preserve order
+                    else { // preserve order 单向链表
                         Node<K,V> loHead = null, loTail = null;
                         Node<K,V> hiHead = null, hiTail = null;
                         Node<K,V> next;
                         do {
                             next = e.next;
-                            if ((e.hash & oldCap) == 0) {
+                            if ((e.hash & oldCap) == 0) { // 重新寻址, 要么index位置不变, 要么都在old index + oldCap的位置
                                 if (loTail == null)
                                     loHead = e;
                                 else
@@ -755,12 +755,12 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      */
     final void treeifyBin(Node<K,V>[] tab, int hash) {
         int n, index; Node<K,V> e;
-        if (tab == null || (n = tab.length) < MIN_TREEIFY_CAPACITY)
-            resize();
+        if (tab == null || (n = tab.length) < MIN_TREEIFY_CAPACITY) // 数组长度小于64
+            resize(); // 数组扩容
         else if ((e = tab[index = (n - 1) & hash]) != null) {
             TreeNode<K,V> hd = null, tl = null;
             do {
-                TreeNode<K,V> p = replacementTreeNode(e, null);
+                TreeNode<K,V> p = replacementTreeNode(e, null); // Node转换成TreeNode, 单向链表转为双向链表
                 if (tl == null)
                     hd = p;
                 else {
@@ -770,7 +770,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                 tl = p;
             } while ((e = e.next) != null);
             if ((tab[index] = hd) != null)
-                hd.treeify(tab);
+                hd.treeify(tab); // 双向链表转化成红黑树
         }
     }
 
@@ -815,16 +815,16 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                                boolean matchValue, boolean movable) {
         Node<K,V>[] tab; Node<K,V> p; int n, index;
         if ((tab = table) != null && (n = tab.length) > 0 &&
-            (p = tab[index = (n - 1) & hash]) != null) {
+            (p = tab[index = (n - 1) & hash]) != null) { // hash寻址
             Node<K,V> node = null, e; K k; V v;
             if (p.hash == hash &&
-                ((k = p.key) == key || (key != null && key.equals(k))))
+                ((k = p.key) == key || (key != null && key.equals(k)))) // 单节点匹配
                 node = p;
             else if ((e = p.next) != null) {
-                if (p instanceof TreeNode)
+                if (p instanceof TreeNode) // 红黑树查找
                     node = ((TreeNode<K,V>)p).getTreeNode(hash, key);
                 else {
-                    do {
+                    do { // 链表遍历
                         if (e.hash == hash &&
                             ((k = e.key) == key ||
                              (key != null && key.equals(k)))) {
