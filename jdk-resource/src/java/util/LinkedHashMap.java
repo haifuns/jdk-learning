@@ -302,9 +302,9 @@ public class LinkedHashMap<K,V>
         }
     }
 
-    void afterNodeAccess(Node<K,V> e) { // move node to last 修改后移动到链表尾
+    void afterNodeAccess(Node<K,V> e) { // move node to last 修改后操作
         LinkedHashMap.Entry<K,V> last;
-        if (accessOrder && (last = tail) != e) {
+        if (accessOrder && (last = tail) != e) { // accessOrder为true表示按照访问顺序此时放到末尾, 否则按照插入顺序不操作
             LinkedHashMap.Entry<K,V> p =
                 (LinkedHashMap.Entry<K,V>)e, b = p.before, a = p.after;
             p.after = null;

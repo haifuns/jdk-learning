@@ -22,15 +22,16 @@ public class MapMain {
             System.out.println(entry.getKey());
         }
 
-        // 相对hashmap额外用双向链表记录顺序
+        // 相对hashmap额外用双向链表记录插入顺序(默认)
         Map<Integer,String> linkedHashMap = new LinkedHashMap<>();
 
         linkedHashMap.put(2, "李四");
         linkedHashMap.put(3, "王五");
         linkedHashMap.put(1, "张三");
+        linkedHashMap.put(2, "李四2");
 
         System.out.println(linkedHashMap.get(2));
-        // 操作顺序
+        // 插入顺序
         for (Map.Entry<Integer, String> entry : linkedHashMap.entrySet()) {
             System.out.println(entry.getKey());
         }
