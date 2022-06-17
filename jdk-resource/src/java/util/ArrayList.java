@@ -907,7 +907,7 @@ public class ArrayList<E> extends AbstractList<E>
         }
 
         final void checkForComodification() {
-            if (modCount != expectedModCount)
+            if (modCount != expectedModCount) // 检查modCount, 如果数组有变化fail-fast
                 throw new ConcurrentModificationException();
         }
     }
