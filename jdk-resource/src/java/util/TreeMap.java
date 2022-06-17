@@ -534,7 +534,7 @@ public class TreeMap<K,V>
      */
     public V put(K key, V value) {
         Entry<K,V> t = root;
-        if (t == null) {
+        if (t == null) { // 根节点是空直接放下
             compare(key, key); // type (and possibly null) check
 
             root = new Entry<>(key, value, null);
@@ -545,9 +545,9 @@ public class TreeMap<K,V>
         int cmp;
         Entry<K,V> parent;
         // split comparator and comparable paths
-        Comparator<? super K> cpr = comparator;
+        Comparator<? super K> cpr = comparator; // 如果自己指定了排序方式
         if (cpr != null) {
-            do {
+            do { // 按照左小右大插入到树中合适位置
                 parent = t;
                 cmp = cpr.compare(key, t.key);
                 if (cmp < 0)
@@ -579,7 +579,7 @@ public class TreeMap<K,V>
             parent.left = e;
         else
             parent.right = e;
-        fixAfterInsertion(e);
+        fixAfterInsertion(e); // 插入后红黑树处理
         size++;
         modCount++;
         return null;
